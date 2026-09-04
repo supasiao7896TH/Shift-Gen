@@ -10,7 +10,7 @@
   ที่หมุนต่อเนื่องตายตัว** ไม่ใช่ข้อมูลสุ่มรายปี ShiftGen จึงคำนวณจากสูตรเดียวแล้ว generate +
   export .xlsx ให้อัตโนมัติทุกปี ไม่ต้องพิมพ์มืออีกต่อไป
 - **ผู้ใช้หลัก:** พี่ A และทีม Boardman/Operator กะ GC-M PTA
-- **Status:** Phase 1 (Local-First) เสร็จแล้ว — ยังไม่ deploy ขึ้น URL จริง
+- **Status:** Deploy แล้ว — https://shiftgen.supasiao.workers.dev (auto-deploy ทุก push เข้า main)
 
 ---
 
@@ -22,10 +22,13 @@
 - **AI:** ไม่มี — logic เป็นสูตรคณิตศาสตร์ล้วน ไม่ต้องพึ่ง AI
 - **Auth:** ไม่มี — เครื่องมือ generate/export ไม่มีข้อมูลส่วนบุคคล
 - **Export:** SheetJS (`xlsx`) โหลดผ่าน CDN (cdnjs) — dynamic import เฉพาะตอนกดปุ่ม export
-- **Deploy:** ยังไม่ตั้งค่า (รอพี่ A ตัดสินใจ Cloudflare Workers / GitHub Pages)
-- **Test/CI:** Vitest (unit) + Playwright (e2e/a11y) · GitHub Actions scaffold มาจาก starter
-  (ยังไม่ได้ตั้ง secret สำหรับ deploy จริง)
-- **Repo:** ยังไม่ push (รอ `git init` + push ครั้งแรก)
+- **Deploy:** Cloudflare Workers — https://shiftgen.supasiao.workers.dev (`wrangler deploy`
+  ธรรมดา ไม่ใช่ versions upload/deploy — ลองแล้วจริงว่า `versions deploy -y` พังเพราะ
+  ต้องมี version-id ระบุตรงๆ ถึงจะรันแบบ non-interactive ได้, ShiftGen ไม่ต้อง
+  canary/gradual rollout อยู่แล้วเลยไม่คุ้มจะแก้ปัญหานั้น)
+- **Test/CI:** Vitest (unit) + Playwright (e2e/a11y) · GitHub Actions (`.github/workflows/ci.yml`)
+  รัน check ทุก push/PR แล้ว deploy อัตโนมัติเมื่อ push เข้า main และ check ผ่าน
+- **Repo:** https://github.com/supasiao7896TH/Shift-esey
 - **Branch:** main
 
 ### JS Modules (ใช้เท่าที่จำเป็น — ตัด CLOUD_SYNC_MANAGER/AUTH_PROVIDER/GEMINI_AI_BRIDGE ออกทั้งหมด)
@@ -89,13 +92,14 @@ roles = pattern.phaseMap[phase]   // {M:'B', N:'C', OM:'D', ON:'A'} หรือ
 | Export Master .xlsx (ทั้งปี) | ✅ Done | SheetJS, 2 sheet ครึ่งปี |
 | Export ปฏิทินรายทีม .xlsx (ทั้งปี) | ✅ Done | 7 sheet (4 ทีม 12Hr + 3 ทีม 8Hr) |
 | ตั้งค่า Rotation Pattern (แก้ phaseMap) | ✅ Done | 3 โหมด view→edit→confirm กันมือลั่น |
-| Deploy ขึ้น URL จริง | ⬜ Todo | รอพี่ A ตัดสินใจ Cloudflare Workers/GitHub Pages |
+| Deploy ขึ้น URL จริง | ✅ Done | shiftgen.supasiao.workers.dev — auto-deploy ทุก push main |
 
 ---
 
 ## 🚧 Known Issues & TODO
-- [ ] ยังไม่ deploy ขึ้น URL จริง — ตอนนี้ใช้ผ่าน `npm run dev` / build local เท่านั้น
-- [ ] `AppConfig.ISSUE_URL` ยังว่างอยู่ — ปุ่ม "รายงานปัญหา" เงียบจนกว่าจะมี repo GitHub จริง
+- [ ] ยังไม่ได้ตั้ง repo variable `APP_URL` — step "ตรวจว่า URL จริงเสิร์ฟ commit นี้แล้ว"
+  ใน CI จึงข้ามการตรวจอัตโนมัติ (ไม่ fail แค่ไม่ verify) ตั้งได้ที่ Settings → Secrets
+  and variables → Actions → Variables → `APP_URL` = `https://shiftgen.supasiao.workers.dev`
 
 ---
 

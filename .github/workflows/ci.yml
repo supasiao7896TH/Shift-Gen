@@ -48,15 +48,16 @@ jobs:
           echo "STAMP=$STAMP" >> "$GITHUB_ENV"
           npm run build
 
+      # ใช้ `deploy` ธรรมดา ไม่ใช้ versions upload/deploy 2-step: ลองแล้วจริงพัง เพราะ
+      # `versions deploy -y` แค่ auto-confirm แต่ไม่ auto-*เลือก* เวอร์ชันให้ ต้องมี
+      # version-id ส่งเข้าไปตรงๆ ถึงจะรันแบบ non-interactive ได้ (error จริงที่เจอ: "You
+      # must select at least 1 version to deploy") — ShiftGen เป็นเครื่องมือเล็ก ไม่ต้อง
+      # canary/gradual rollout อยู่แล้ว `deploy` ธรรมดาพอ (rollback ทำได้ผ่าน
+      # `wrangler rollback` หรือ revert commit แล้ว push ใหม่)
       - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          command: versions upload
-
-      - uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          command: versions deploy -y
+          command: deploy
 
       # ยืนยันว่าสิ่งที่อยู่บน URL จริงคือ commit นี้ ไม่ใช่ของเก่าที่ cache ไว้
       - name: ตรวจว่า URL จริงเสิร์ฟ commit นี้แล้ว

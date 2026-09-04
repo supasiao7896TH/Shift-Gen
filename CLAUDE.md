@@ -3,7 +3,7 @@
 ## Project Context
 - ชื่อแอป: ShiftGen
 - Stack: Multi-File (Vite + ES Modules) · IndexedDB (local-only, ไม่มี Firebase/Gemini)
-- Deploy: ยังไม่ deploy ขึ้น URL จริง (รันผ่าน `npm run dev` / build local ก่อน)
+- Deploy: Cloudflare Workers — https://shiftgen.supasiao.workers.dev (auto-deploy ทุก push เข้า main ผ่าน `.github/workflows/ci.yml`, ใช้ `wrangler deploy` ธรรมดา ไม่ใช่ versions upload/deploy)
 - Branch: main
 
 ## Commands
@@ -41,7 +41,7 @@ fixture `tests/fixtures/shiftgen-2026-golden.json` — **ถ้าจะแก�
 - [x] Phase 1: Local-First (scaffold จาก `design-lab/starter-multifile/`) — เสร็จแล้ว
 - [ ] Phase 2: AI — ข้าม (ไม่จำเป็น logic เป็นสูตรคณิตศาสตร์ล้วน)
 - [ ] Phase 3: Cloud Sync — ข้าม เว้นแต่พี่ A อยากให้ทีมเห็นพร้อมกัน real-time ในอนาคต
-- [ ] Phase 4: Deploy — ยังไม่ทำ (รอพี่ A ตัดสินใจ Cloudflare Workers/GitHub Pages)
+- [x] Phase 4: Deploy — Cloudflare Workers, auto-deploy ทุก push เข้า main
 
 ## Known Issues
 → ติดตามที่ GitHub Issues ของ repo นี้ (ไม่ต้องจดซ้ำในไฟล์นี้ เพราะจะตกยุคทันที)

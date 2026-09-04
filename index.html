@@ -158,6 +158,13 @@ td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
 .month-grid table { width:100%; table-layout:fixed; min-width:0; }
 .month-grid table td, .month-grid table th { text-align:center; padding:7px 4px; font-size:12.8px; font-variant-numeric:tabular-nums; }
 .month-grid table th:first-child, .month-grid table td:first-child { width:52px; text-align:left; font-weight:600; position:sticky; left:0; background:var(--surface-2); }
+/* ไฮไลต์เสาร์-อาทิตย์/วันหยุดนักขัตฤกษ์ทั้งคอลัมน์ — amber (accent-2) ใช้กับวันหยุด
+   ตรงความหมาย "ข้อมูลอ้างอิง" ของระบบสีเดิม ไม่ชนกับ ok/warn/crit ที่สงวนไว้บอกสถานะ */
+.month-grid table td.col-weekend, .month-grid table th.col-weekend { background:var(--surface-3); }
+.month-grid table td.col-holiday, .month-grid table th.col-holiday { background:var(--accent-2-soft); color:var(--accent-2-text); }
+.legend-swatch { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:2px; vertical-align:-1px; }
+.legend-swatch.col-weekend { background:var(--surface-3); border:1px solid var(--border-strong); }
+.legend-swatch.col-holiday { background:var(--accent-2-soft); border:1px solid var(--accent-2); }
 
 .section-block { display:grid; gap:14px; }
 /* .section-block ตั้ง display:grid ไว้ (author stylesheet) ซึ่งชนะ UA default [hidden]{display:none}

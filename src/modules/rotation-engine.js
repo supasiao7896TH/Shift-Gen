@@ -49,6 +49,7 @@ function roleOfTeam(pattern, dateStr, team) {
 function generateMonth(pattern, year, month) {
   const nDays = daysInMonth(year, month);
   const days = [];
+  const dates = [];
   const weekdays = [];
   const roles = {};
   pattern.roles.forEach((r) => (roles[r] = []));
@@ -56,11 +57,12 @@ function generateMonth(pattern, year, month) {
   for (let d = 1; d <= nDays; d++) {
     const dateStr = formatDate(year, month, d);
     days.push(d);
+    dates.push(dateStr);
     weekdays.push(weekdayAbbr(dateStr));
     const roleVals = rolesForDate(pattern, dateStr);
     pattern.roles.forEach((r) => roles[r].push(roleVals[r]));
   }
-  return { year, month, days, weekdays, roles };
+  return { year, month, days, dates, weekdays, roles };
 }
 
 function generateYear(pattern, year) {

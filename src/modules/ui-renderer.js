@@ -1,5 +1,7 @@
 /* 5 · UI_RENDERER — ที่เดียวที่แตะ DOM
    กัน XSS: ข้อความจากผู้ใช้/ฐานข้อมูลต้องผ่าน textContent เท่านั้น ห้าม innerHTML */
+import { DayType } from "./day-type.js";
+
 function el(tag, cls, text) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
@@ -37,10 +39,43 @@ function renderKpis(container, items) {
   items.forEach((k) => container.appendChild(kpi(k)));
 }
 
+/* คลาส CSS ต่อ "คอลัมน์วัน" (เสาร์-อาทิตย์/วันหยุดนักขัตฤกษ์) — ใช้ dates คู่กับ weekdays
+   ที่ RotationEngine.generateMonth คืนมา คำนวณครั้งเดียวแล้วแปะทุกแถวในคอลัมน์เดียวกัน */
+function dayColumnClass(dayType) {
+  if (dayType.type === "holiday") return "col-holiday";
+  if (dayType.type === "weekend") return "col-weekend";
+  return "";
+}
+
+function dayCell(tag, text, dayType) {
+  const cls = dayColumnClass(dayType);
+  const cell = el(tag, cls ? `num ${cls}` : "num", text);
+  if (dayType.label) cell.title = dayType.label;
+  return cell;
+}
+
+function monthGridLegend() {
+  const row = el("div", "field-row");
+  row.style.marginTop = "2px";
+  const weekend = el("span", "chip c-neutral");
+  weekend.appendChild(el("span", "legend-swatch col-weekend"));
+  weekend.appendChild(document.createTextNode(" เสาร์-อาทิตย์"));
+  const holiday = el("span", "chip c-neutral");
+  holiday.appendChild(el("span", "legend-swatch col-holiday"));
+  holiday.appendChild(document.createTextNode(" วันหยุดนักขัตฤกษ์"));
+  row.appendChild(weekend);
+  row.appendChild(holiday);
+  return row;
+}
+
 /* ตาราง preview รายเดือน: แถว DATE (เลขวัน) · SHIFT (วันในสัปดาห์) · role แต่ละแถว (M/N/OM/ON หรือ M/N/O) */
 function monthGridCard(pattern, monthData) {
   const card = el("div", "card month-grid");
   card.appendChild(el("div", "month-grid-title", pattern.name));
+
+  const dayTypes = monthData.dates.map((dateStr, i) =>
+    DayType.classifyDay(dateStr, monthData.weekdays[i])
+  );
 
   /* ไม่ใช้ scrollableWrap ที่นี่: table-layout:fixed + width:100% (ดู .month-grid ใน
      index.html) บีบทุกคอลัมน์ให้พอดีความกว้างการ์ดเสมอ ไม่มีทางเกิด horizontal scroll
@@ -50,11 +85,11 @@ function monthGridCard(pattern, monthData) {
   const thead = el("thead");
   const trDate = el("tr");
   trDate.appendChild(el("th", null, "DATE"));
-  monthData.days.forEach((d) => trDate.appendChild(el("th", "num", d)));
+  monthData.days.forEach((d, i) => trDate.appendChild(dayCell("th", d, dayTypes[i])));
   thead.appendChild(trDate);
   const trShift = el("tr");
   trShift.appendChild(el("th", null, "SHIFT"));
-  monthData.weekdays.forEach((w) => trShift.appendChild(el("th", "num", w)));
+  monthData.weekdays.forEach((w, i) => trShift.appendChild(dayCell("th", w, dayTypes[i])));
   thead.appendChild(trShift);
   table.appendChild(thead);
 
@@ -62,12 +97,13 @@ function monthGridCard(pattern, monthData) {
   pattern.roles.forEach((role) => {
     const tr = el("tr");
     tr.appendChild(el("td", null, role));
-    monthData.roles[role].forEach((team) => tr.appendChild(el("td", "num", team)));
+    monthData.roles[role].forEach((team, i) => tr.appendChild(dayCell("td", team, dayTypes[i])));
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
   wrap.appendChild(table);
   card.appendChild(wrap);
+  card.appendChild(monthGridLegend());
   return card;
 }
 

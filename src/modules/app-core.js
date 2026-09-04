@@ -206,6 +206,17 @@ function refreshTeamOptions() {
   );
 }
 
+function refreshPdfPatternSelect() {
+  const patterns = getEffectivePatterns();
+  const select = document.getElementById("pdfPatternSelect");
+  const prevPatternId = select.value;
+  UiRenderer.fillSelect(
+    select,
+    patterns.map((p) => ({ value: p.id, label: p.shortLabel })),
+    prevPatternId || patterns[0].id
+  );
+}
+
 function renderTeamPreview(year, month) {
   const patterns = getEffectivePatterns();
   const patternSelect = document.getElementById("teamPatternSelect");
@@ -226,6 +237,7 @@ function generateAndRender() {
   renderMasterPreview(year, month);
   refreshTeamSelectors();
   renderTeamPreview(year, month);
+  refreshPdfPatternSelect();
 }
 
 /* --- Export --- */
@@ -275,18 +287,16 @@ function installExportButtons() {
   pdfBtn.addEventListener("click", async () => {
     const { year } = readYearMonth();
     if (!Number.isInteger(year)) return showToast("กรอกปีก่อน export ค่ะ");
+    const patternId = document.getElementById("pdfPatternSelect").value;
+    if (!patternId) return showToast("เลือก pattern สำหรับ PDF ก่อนค่ะ");
     const originalLabel = pdfBtn.textContent;
     pdfBtn.disabled = true;
     pdfBtn.textContent = "กำลังสร้าง PDF... (รอสักครู่)";
     try {
       const { PdfExport } = await import("./pdf-export.js");
       const patterns = getEffectivePatterns();
-      await PdfExport.exportYearPdf(patterns, year);
-      await recordExport(
-        year,
-        patterns.map((p) => p.id),
-        "pdf"
-      );
+      await PdfExport.exportYearPdf(patterns, year, patternId);
+      await recordExport(year, [patternId], "pdf");
     } catch (err) {
       DebugModule.log("export PDF ไม่สำเร็จ", err && err.message);
       showToast("สร้าง PDF ไม่สำเร็จ ลองใหม่อีกครั้งค่ะ");

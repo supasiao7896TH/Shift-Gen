@@ -1,10 +1,16 @@
 /* NEW · PDF_EXPORT — export ภาพรวมทั้งปีเป็น PDF มีสี (ไฮไลต์เสาร์-อาทิตย์/วันหยุดนักขัตฤกษ์
    เหมือนที่เห็นบนจอ) สำหรับปริ้น/ส่งอีเมลให้ทีมงาน — ต่างจาก xlsx-export.js ตรงที่ต้องคุมสี
    เอง (canvas ไม่รู้จัก CSS variable ตามธีมปัจจุบันของหน้าเว็บ) จึงใช้สีคงที่ hardcode ไว้
-   ในสไตล์ .pdf-page เท่านั้น ไม่พึ่ง var(--...) ของหน้าเว็บ — กัน PDF ออกมาเป็นธีมมืดโดยไม่ตั้งใจ */
+   ในสไตล์ .pdf-page เท่านั้น ไม่พึ่ง var(--...) ของหน้าเว็บ — กัน PDF ออกมาเป็นธีมมืดโดยไม่ตั้งใจ
+
+   รูปแบบ "ภาพรวม" (ตามที่พี่ A ขอ): 2 หน้า ครึ่งปีละหน้า (Jan-Jun / Jul-Dec เหมือน xlsx
+   master export) แต่ละหน้ามี 6 ตารางเดือนอัดแน่น — เลือกได้ทีละ 1 pattern (dropdown ในหน้า
+   dashboard) แทนการ hardcode ตัด pattern ใดออก เพราะ pattern ไหนยัง "ใช้งานจริง" อยู่
+   เปลี่ยนได้ตามเวลา (ตอนนี้ 8Hr 4-2 เลิกใช้แล้ว แต่ Dashboard/Excel ยังเก็บไว้อ้างอิงตามเดิม —
+   ไฟล์ภาพรวมนี้ที่เดียวที่ต้องเลือกให้ตรงกับสถานการณ์จริง ณ ตอนกด export) */
 /* global html2pdf */
 import { RotationEngine } from "./rotation-engine.js";
-import { UiRenderer } from "./ui-renderer.js";
+import { DayType } from "./day-type.js";
 
 const MONTH_NAME_TH = [
   "",
@@ -20,6 +26,11 @@ const MONTH_NAME_TH = [
   "ตุลาคม",
   "พฤศจิกายน",
   "ธันวาคม"
+];
+
+const HALF_YEARS = [
+  { label: "มกราคม - มิถุนายน", months: [1, 2, 3, 4, 5, 6] },
+  { label: "กรกฎาคม - ธันวาคม", months: [7, 8, 9, 10, 11, 12] }
 ];
 
 /* พิกเซลของหน้า A4 แนวนอนที่ 96dpi (297mm x 210mm) — ให้ jsPDF ใช้ unit "px" ตรงๆ
@@ -48,32 +59,73 @@ function buildLegend() {
   return legend;
 }
 
-function buildMonthPage(patterns, year, month) {
-  const page = el("div", "pdf-page");
-  page.appendChild(el("div", "pdf-page-header", `ตารางกะ ${year} — ${MONTH_NAME_TH[month]}`));
+/* ตารางย่อแบบอัดแน่น: ไม่มีแถว SHIFT (ชื่อวันในสัปดาห์เป็นตัวหนังสือ) เพราะสีพื้นคอลัมน์
+   บอกเสาร์-อาทิตย์อยู่แล้ว — ตัดออกเพื่อประหยัดพื้นที่แนวตั้ง ให้ยัด 6 เดือนต่อหน้าได้จริง */
+function buildCompactMonthTable(pattern, monthData) {
+  const dayTypes = monthData.dates.map((dateStr, i) =>
+    DayType.classifyDay(dateStr, monthData.weekdays[i])
+  );
 
-  patterns.forEach((pattern) => {
-    page.appendChild(el("div", "pdf-section-title", pattern.name));
+  function dayCell(tag, text, dayType) {
+    const cls =
+      dayType.type === "holiday" ? "col-holiday" : dayType.type === "weekend" ? "col-weekend" : "";
+    const cell = el(tag, cls ? `num ${cls}` : "num", text);
+    if (dayType.label) cell.title = dayType.label;
+    return cell;
+  }
+
+  const table = el("table");
+  const thead = el("thead");
+  const trDate = el("tr");
+  trDate.appendChild(el("th", null, "DATE"));
+  monthData.days.forEach((d, i) => trDate.appendChild(dayCell("th", d, dayTypes[i])));
+  thead.appendChild(trDate);
+  table.appendChild(thead);
+
+  const tbody = el("tbody");
+  pattern.roles.forEach((role) => {
+    const tr = el("tr");
+    tr.appendChild(el("td", null, role));
+    monthData.roles[role].forEach((team, i) => tr.appendChild(dayCell("td", team, dayTypes[i])));
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  return table;
+}
+
+function buildHalfYearPage(pattern, year, half) {
+  const page = el("div", "pdf-page pdf-page-compact");
+  page.appendChild(el("div", "pdf-page-header", `${pattern.name} — ${year} (${half.label})`));
+
+  half.months.forEach((month) => {
+    page.appendChild(el("div", "pdf-month-label", MONTH_NAME_TH[month]));
     const monthData = RotationEngine.generateMonth(pattern, year, month);
-    page.appendChild(UiRenderer.buildMonthTable(pattern, monthData));
+    page.appendChild(buildCompactMonthTable(pattern, monthData));
   });
 
   page.appendChild(buildLegend());
   return page;
 }
 
-function buildYearContainer(patterns, year) {
+function buildYearContainer(pattern, year) {
   const root = el("div", "pdf-export-root");
-  for (let month = 1; month <= 12; month++) {
-    const page = buildMonthPage(patterns, year, month);
-    if (month < 12) page.style.pageBreakAfter = "always";
+  HALF_YEARS.forEach((half, i) => {
+    const page = buildHalfYearPage(pattern, year, half);
+    if (i < HALF_YEARS.length - 1) page.style.pageBreakAfter = "always";
     root.appendChild(page);
-  }
+  });
   return root;
 }
 
-async function exportYearPdf(patterns, year) {
-  const root = buildYearContainer(patterns, year);
+/* patterns: array ของ pattern ที่ effective อยู่ (รวม override ถ้ามี) · patternId: id ของ
+   pattern ที่พี่ A เลือกจาก dropdown ให้ export — ต้องมีอยู่จริงใน patterns เสมอ (dropdown
+   สร้างจาก array เดียวกัน) ไม่ fallback เดาเป็น pattern อื่นถ้าหาไม่เจอ เพื่อไม่ให้ export
+   ผิด pattern ไปเงียบๆ */
+async function exportYearPdf(patterns, year, patternId) {
+  const pattern = patterns.find((p) => p.id === patternId);
+  if (!pattern) throw new Error(`ไม่พบ pattern id "${patternId}" ใน patterns ที่ให้มา`);
+
+  const root = buildYearContainer(pattern, year);
 
   /* ซ่อน root ด้วย wrapper ภายนอก (height:0; overflow:hidden;) แทนการตั้ง position:fixed
      บน root เอง — html2pdf.js clone element ที่ .from() ไปวางในโครง container ของตัวเองก่อน

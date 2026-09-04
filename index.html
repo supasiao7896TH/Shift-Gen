@@ -166,6 +166,32 @@ td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
 .legend-swatch.col-weekend { background:var(--surface-3); border:1px solid var(--border-strong); }
 .legend-swatch.col-holiday { background:var(--accent-2-soft); border:1px solid var(--accent-2); }
 
+/* pdf-export.js — สีคงที่ (hex ตรงๆ ไม่ใช้ var(--...)) เพราะ html2canvas render จาก DOM
+   จริงตอนนั้น ถ้าใช้ตัวแปรธีมจะได้ PDF เป็นธีมมืดถ้าพี่ A เปิดหน้าเว็บด้วยธีมมืดอยู่ —
+   ไฟล์ที่จะปริ้น/ส่งอีเมลต้องได้ผลลัพธ์เดียวกันทุกครั้งไม่ว่าจะกดตอนไหน */
+/* ห้ามใส่ position:fixed/absolute ให้ .pdf-export-root — html2pdf.js clone element นี้ไปวาง
+   ในโครง container ของตัวเองก่อน render, ถ้า element ต้นทางมี position:fixed ติดมา จะทำให้
+   คำนวณความสูงของ clone ได้ 0 (ทดสอบแล้วจริง: ได้ PDF เปล่าเงียบๆ ไม่มี error ให้เห็นเลย)
+   ให้ปล่อยเป็น position ปกติ (static) แล้วซ่อนด้วย wrapper ภายนอก height:0;overflow:hidden
+   แทน (ดู pdf-export.js exportYearPdf) */
+.pdf-export-root { width:1122px; font-family:var(--font-ui); background:#FFFFFF; color:#131829; }
+/* ห้ามตั้ง min-height ให้เท่ากับความสูงหน้า PDF (794px) ตรงๆ — ทดสอบแล้วจริงว่าทำให้เกิด
+   หน้าเปล่าแทรกหลังทุกเดือน (เนื้อหา+padding รวมแล้วเกิน 794px ไปเล็กน้อย ล้นไปอีกหน้าเงียบๆ)
+   ปล่อยให้สูงเท่าเนื้อหาจริงแล้วให้ page-break-after คั่นระหว่างเดือนแทน */
+.pdf-page { width:100%; padding:28px; box-sizing:border-box; background:#FFFFFF; }
+.pdf-page-header { font-size:19px; font-weight:700; margin-bottom:14px; color:#131829; }
+.pdf-page .pdf-section-title { font-weight:600; margin:14px 0 8px; color:#131829; }
+.pdf-page table { width:100%; table-layout:fixed; border-collapse:collapse; margin-bottom:4px; }
+.pdf-page table th, .pdf-page table td { padding:5px 3px; font-size:11px; text-align:center; border-bottom:1px solid #D6DEEE; font-variant-numeric:tabular-nums; }
+.pdf-page table th:first-child, .pdf-page table td:first-child { text-align:left; font-weight:600; background:#EDF1F9; width:46px; }
+.pdf-page table td.col-weekend, .pdf-page table th.col-weekend { background:#DFE6F3; }
+.pdf-page table td.col-holiday, .pdf-page table th.col-holiday { background:#FBEFCF; color:#6B4E08; }
+.pdf-page .pdf-legend { margin-top:10px; font-size:11px; color:#414A60; }
+.pdf-page .pdf-legend .legend-swatch { margin:0 4px 0 12px; }
+.pdf-page .pdf-legend .legend-swatch:first-child { margin-left:0; }
+.pdf-page .pdf-legend .legend-swatch.col-weekend { background:#DFE6F3; border:1px solid #B2BFD8; }
+.pdf-page .pdf-legend .legend-swatch.col-holiday { background:#FBEFCF; border:1px solid #8A6410; }
+
 .section-block { display:grid; gap:14px; }
 /* .section-block ตั้ง display:grid ไว้ (author stylesheet) ซึ่งชนะ UA default [hidden]{display:none}
    เสมอไม่ว่า specificity เท่าไหร่ — ต้องประกาศเองว่า [hidden] ชนะ ไม่งั้น section ที่ควรซ่อนจะโผล่ */
@@ -266,6 +292,7 @@ td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
       <div class="field-row">
         <button class="btn btn-soft" id="exportMasterBtn" type="button">Export Master ทั้งปี (.xlsx)</button>
         <button class="btn btn-soft" id="exportTeamsBtn" type="button">Export ปฏิทินรายทีมทั้งปี (.xlsx)</button>
+        <button class="btn btn-soft" id="exportPdfBtn" type="button">Export Master PDF มีสี ทั้งปี</button>
       </div>
     </section>
 
@@ -293,6 +320,8 @@ td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
 
 <!-- SheetJS — export .xlsx ฝั่ง client ล้วน (pin เวอร์ชันเสมอ, CSP อนุญาต cdnjs.cloudflare.com ไว้แล้ว) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- html2pdf.js — export PDF มีสีฝั่ง client ล้วน (bundle รวม html2canvas+jsPDF ในตัว) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.14.0/html2pdf.bundle.min.js"></script>
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>

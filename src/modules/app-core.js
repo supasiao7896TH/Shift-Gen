@@ -270,6 +270,31 @@ function installExportButtons() {
       "teams"
     );
   });
+
+  const pdfBtn = document.getElementById("exportPdfBtn");
+  pdfBtn.addEventListener("click", async () => {
+    const { year } = readYearMonth();
+    if (!Number.isInteger(year)) return showToast("กรอกปีก่อน export ค่ะ");
+    const originalLabel = pdfBtn.textContent;
+    pdfBtn.disabled = true;
+    pdfBtn.textContent = "กำลังสร้าง PDF... (รอสักครู่)";
+    try {
+      const { PdfExport } = await import("./pdf-export.js");
+      const patterns = getEffectivePatterns();
+      await PdfExport.exportYearPdf(patterns, year);
+      await recordExport(
+        year,
+        patterns.map((p) => p.id),
+        "pdf"
+      );
+    } catch (err) {
+      DebugModule.log("export PDF ไม่สำเร็จ", err && err.message);
+      showToast("สร้าง PDF ไม่สำเร็จ ลองใหม่อีกครั้งค่ะ");
+    } finally {
+      pdfBtn.disabled = false;
+      pdfBtn.textContent = originalLabel;
+    }
+  });
 }
 
 /* --- Settings: pattern phase-map editor --- */

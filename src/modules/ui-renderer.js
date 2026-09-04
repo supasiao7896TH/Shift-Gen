@@ -68,19 +68,13 @@ function monthGridLegend() {
   return row;
 }
 
-/* ตาราง preview รายเดือน: แถว DATE (เลขวัน) · SHIFT (วันในสัปดาห์) · role แต่ละแถว (M/N/OM/ON หรือ M/N/O) */
-function monthGridCard(pattern, monthData) {
-  const card = el("div", "card month-grid");
-  card.appendChild(el("div", "month-grid-title", pattern.name));
-
+/* สร้าง <table> เดือนเดียวพร้อมไฮไลต์เสาร์-อาทิตย์/วันหยุด — ใช้ร่วมกันทั้ง dashboard
+   preview (monthGridCard) และ pdf-export.js (ต้องได้สีเดียวกันเป๊ะกับที่เห็นบนจอ) */
+function buildMonthTable(pattern, monthData) {
   const dayTypes = monthData.dates.map((dateStr, i) =>
     DayType.classifyDay(dateStr, monthData.weekdays[i])
   );
 
-  /* ไม่ใช้ scrollableWrap ที่นี่: table-layout:fixed + width:100% (ดู .month-grid ใน
-     index.html) บีบทุกคอลัมน์ให้พอดีความกว้างการ์ดเสมอ ไม่มีทางเกิด horizontal scroll
-     จึงไม่ต้องมี tabindex/role="region" (ไม่มีอะไรให้ scroll จริง) */
-  const wrap = el("div", "tbl-wrap");
   const table = el("table");
   const thead = el("thead");
   const trDate = el("tr");
@@ -101,7 +95,19 @@ function monthGridCard(pattern, monthData) {
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
-  wrap.appendChild(table);
+  return table;
+}
+
+/* ตาราง preview รายเดือน: แถว DATE (เลขวัน) · SHIFT (วันในสัปดาห์) · role แต่ละแถว (M/N/OM/ON หรือ M/N/O) */
+function monthGridCard(pattern, monthData) {
+  const card = el("div", "card month-grid");
+  card.appendChild(el("div", "month-grid-title", pattern.name));
+
+  /* ไม่ใช้ scrollableWrap ที่นี่: table-layout:fixed + width:100% (ดู .month-grid ใน
+     index.html) บีบทุกคอลัมน์ให้พอดีความกว้างการ์ดเสมอ ไม่มีทางเกิด horizontal scroll
+     จึงไม่ต้องมี tabindex/role="region" (ไม่มีอะไรให้ scroll จริง) */
+  const wrap = el("div", "tbl-wrap");
+  wrap.appendChild(buildMonthTable(pattern, monthData));
   card.appendChild(wrap);
   card.appendChild(monthGridLegend());
   return card;
@@ -279,5 +285,6 @@ export const UiRenderer = {
   renderMasterPreview,
   renderTeamPreview,
   fillSelect,
-  renderPatternSettings
+  renderPatternSettings,
+  buildMonthTable
 };

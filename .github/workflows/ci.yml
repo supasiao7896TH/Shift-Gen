@@ -48,15 +48,15 @@ jobs:
           echo "STAMP=$STAMP" >> "$GITHUB_ENV"
           npm run build
 
-      # BOOTSTRAP ครั้งเดียว (2569-09-04): Worker "shiftgen" ยังไม่เคยมีมาก่อนบน Cloudflare
-      # เลย — `versions upload` ใช้ไม่ได้กับ Worker ที่ยังไม่เคยมี (error: "You cannot
-      # upload a new version of a Worker that does not yet exist. Please run the `deploy`
-      # command first.") ใช้ `deploy` ธรรมดาสร้าง Worker ให้เกิดก่อนรอบเดียว แล้วค่อยเปลี่ยน
-      # กลับไปเป็น versions upload/deploy 2-step (รองรับ rollback) ในรอบ push ถัดไป
       - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          command: deploy
+          command: versions upload
+
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: versions deploy -y
 
       # ยืนยันว่าสิ่งที่อยู่บน URL จริงคือ commit นี้ ไม่ใช่ของเก่าที่ cache ไว้
       - name: ตรวจว่า URL จริงเสิร์ฟ commit นี้แล้ว

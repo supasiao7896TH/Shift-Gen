@@ -77,7 +77,7 @@ describe("PdfExport — exportYearPdf", () => {
     expect(h1Page.querySelectorAll("th.col-weekend, td.col-weekend").length).toBeGreaterThan(0);
   });
 
-  it("ไม่มีแถว SHIFT (ชื่อวันเป็นตัวหนังสือ) ในตารางอัดแน่น — เหลือแค่ DATE + role rows", async () => {
+  it("มีแถว SHIFT (ชื่อวันย่อ เช่น Mon/Tue) ต่อจาก DATE ในตารางอัดแน่น", async () => {
     const capture = {};
     installFakeHtml2pdf(capture);
     const { PdfExport } = await import("../../src/modules/pdf-export.js");
@@ -87,7 +87,7 @@ describe("PdfExport — exportYearPdf", () => {
     const headerCells = [...firstTable.querySelectorAll("thead tr")].map(
       (tr) => tr.cells[0].textContent
     );
-    expect(headerCells).toEqual(["DATE"]);
+    expect(headerCells).toEqual(["DATE", "SHIFT"]);
     expect(firstTable.querySelectorAll("tbody tr").length).toBe(4); // M, N, OM, ON
   });
 

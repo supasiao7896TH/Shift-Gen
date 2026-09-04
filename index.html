@@ -180,12 +180,14 @@ td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
    ปล่อยให้สูงเท่าเนื้อหาจริงแล้วให้ page-break-after คั่นระหว่างเดือนแทน */
 .pdf-page { width:100%; padding:24px; box-sizing:border-box; background:#FFFFFF; }
 .pdf-page-header { font-size:16px; font-weight:700; line-height:1.25; margin-bottom:8px; color:#131829; }
-/* .pdf-page-compact: 6 เดือนอัดในหน้าเดียว (ภาพรวมครึ่งปี) — ไม่มีแถว SHIFT (ชื่อวันเป็น
-   ตัวหนังสือ) เพราะสีพื้นคอลัมน์บอกเสาร์-อาทิตย์อยู่แล้ว ตัวเลข/ตัวอักษรเล็กลงมากเพราะพื้นที่
-   จำกัด แต่ scale:2 ตอน capture ทำให้ยังคมตอนปริ้นจริง */
+/* .pdf-page-compact: 6 เดือนอัดในหน้าเดียว (ภาพรวมครึ่งปี) — มีแถว SHIFT (Mon/Tue/Wed)
+   ต่อจาก DATE ด้วย (พี่ A ขอ 2569-09-04 เพราะสีพื้นคอลัมน์เสาร์-อาทิตย์อย่างเดียวดูยาก)
+   ตัวเลข/ตัวอักษรเล็กลงมากเพราะพื้นที่จำกัด แต่ scale:2 ตอน capture ทำให้ยังคมตอนปริ้นจริง —
+   padding แถวละ 1.5px (แทน 2px เดิม) เพื่อเผื่อพื้นที่แนวตั้งให้พอสำหรับแถวที่เพิ่มมา
+   (คำนวณแล้ว: งบพื้นที่ 6 เดือน/หน้าพอดีมาก ต้องบีบ padding ไม่งั้นจะล้นเป็นหน้าเปล่าแบบเดิม) */
 .pdf-page-compact .pdf-month-label { font-size:12px; font-weight:600; line-height:1.2; margin:8px 0 3px; color:#131829; }
 .pdf-page-compact table { width:100%; table-layout:fixed; border-collapse:collapse; margin-bottom:2px; line-height:1.15; }
-.pdf-page-compact table th, .pdf-page-compact table td { padding:2px 2px; font-size:8.5px; line-height:1.15; text-align:center; border-bottom:1px solid #D6DEEE; font-variant-numeric:tabular-nums; }
+.pdf-page-compact table th, .pdf-page-compact table td { padding:1.5px 2px; font-size:8.5px; line-height:1.15; text-align:center; border-bottom:1px solid #D6DEEE; font-variant-numeric:tabular-nums; }
 .pdf-page-compact table th:first-child, .pdf-page-compact table td:first-child { text-align:left; font-weight:600; background:#EDF1F9; width:32px; }
 .pdf-page-compact table td.col-weekend, .pdf-page-compact table th.col-weekend { background:#DFE6F3; }
 .pdf-page-compact table td.col-holiday, .pdf-page-compact table th.col-holiday { background:#FBEFCF; color:#6B4E08; }

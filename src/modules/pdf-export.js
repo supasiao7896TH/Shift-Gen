@@ -59,8 +59,10 @@ function buildLegend() {
   return legend;
 }
 
-/* ตารางย่อแบบอัดแน่น: ไม่มีแถว SHIFT (ชื่อวันในสัปดาห์เป็นตัวหนังสือ) เพราะสีพื้นคอลัมน์
-   บอกเสาร์-อาทิตย์อยู่แล้ว — ตัดออกเพื่อประหยัดพื้นที่แนวตั้ง ให้ยัด 6 เดือนต่อหน้าได้จริง */
+/* ตารางย่อแบบอัดแน่น: มีแถว SHIFT (ชื่อวันในสัปดาห์ย่อ Mon/Tue/Wed) ต่อจาก DATE เพราะ
+   สีพื้นคอลัมน์เสาร์-อาทิตย์อย่างเดียวดูยากเวลาเทียบวันที่จริง (พี่ A ขอ 2569-09-04) —
+   เผื่อพื้นที่แนวตั้งด้วยการลด padding ใน .pdf-page-compact table th/td (ดู index.html)
+   แทน ไม่ใช่ตัดแถวออก */
 function buildCompactMonthTable(pattern, monthData) {
   const dayTypes = monthData.dates.map((dateStr, i) =>
     DayType.classifyDay(dateStr, monthData.weekdays[i])
@@ -80,6 +82,10 @@ function buildCompactMonthTable(pattern, monthData) {
   trDate.appendChild(el("th", null, "DATE"));
   monthData.days.forEach((d, i) => trDate.appendChild(dayCell("th", d, dayTypes[i])));
   thead.appendChild(trDate);
+  const trShift = el("tr");
+  trShift.appendChild(el("th", null, "SHIFT"));
+  monthData.weekdays.forEach((w, i) => trShift.appendChild(dayCell("th", w, dayTypes[i])));
+  thead.appendChild(trShift);
   table.appendChild(thead);
 
   const tbody = el("tbody");

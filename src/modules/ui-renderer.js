@@ -42,7 +42,10 @@ function monthGridCard(pattern, monthData) {
   const card = el("div", "card month-grid");
   card.appendChild(el("div", "month-grid-title", pattern.name));
 
-  const wrap = scrollableWrap(`ตารางกะ ${pattern.name} เลื่อนแนวนอนได้`);
+  /* ไม่ใช้ scrollableWrap ที่นี่: table-layout:fixed + width:100% (ดู .month-grid ใน
+     index.html) บีบทุกคอลัมน์ให้พอดีความกว้างการ์ดเสมอ ไม่มีทางเกิด horizontal scroll
+     จึงไม่ต้องมี tabindex/role="region" (ไม่มีอะไรให้ scroll จริง) */
+  const wrap = el("div", "tbl-wrap");
   const table = el("table");
   const thead = el("thead");
   const trDate = el("tr");

@@ -87,7 +87,7 @@ h1,h2,h3,p,ul { margin:0; } ul { list-style:none; padding:0; }
 .nav-item[aria-current="page"] { background:var(--accent-soft); color:var(--accent-soft-text); font-weight:600; }
 .nav-item:focus-visible { outline:none; box-shadow:var(--focus-ring); }
 
-main.content { max-width:1180px; padding:24px 28px calc(100px + env(safe-area-inset-bottom) + 24px); display:grid; gap:24px; align-content:start; }
+main.content { max-width:1760px; padding:24px 28px calc(100px + env(safe-area-inset-bottom) + 24px); display:grid; gap:24px; align-content:start; }
 @media (max-width:900px) {
   .app-shell { grid-template-columns:1fr; }
   .sidebar { border-right:none; border-bottom:1px solid var(--border); flex-direction:row; overflow-x:auto; }
@@ -154,8 +154,10 @@ td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
 
 /* ตาราง preview รายเดือน (M/N/OM/ON) — ตัวเลขวันที่ชิดขวา ตัวหนาแถวแรก */
 .month-grid-title { font-weight:600; margin-bottom:8px; }
-.month-grid table td, .month-grid table th { text-align:center; padding:8px 10px; font-variant-numeric:tabular-nums; }
-.month-grid table th:first-child, .month-grid table td:first-child { text-align:left; font-weight:600; position:sticky; left:0; background:var(--surface-2); }
+.month-grid .tbl-wrap { overflow-x:visible; }
+.month-grid table { width:100%; table-layout:fixed; min-width:0; }
+.month-grid table td, .month-grid table th { text-align:center; padding:7px 4px; font-size:12.8px; font-variant-numeric:tabular-nums; }
+.month-grid table th:first-child, .month-grid table td:first-child { width:52px; text-align:left; font-weight:600; position:sticky; left:0; background:var(--surface-2); }
 
 .section-block { display:grid; gap:14px; }
 /* .section-block ตั้ง display:grid ไว้ (author stylesheet) ซึ่งชนะ UA default [hidden]{display:none}

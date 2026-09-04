@@ -1,0 +1,23 @@
+// เปลี่ยนชื่อเป็น wrangler.jsonc แล้วแก้ 3 ค่า (name/account_id/compatibility_date) ก่อนใช้จริง
+// ต่างจาก design-lab/starter (Single HTML File) ตรง assets.directory: ชี้ไปที่ "./dist"
+// (ผลลัพธ์จาก `npm run build`) ไม่ใช่ "./" — เพราะงั้นจึง**ไม่ต้องมี .assetsignore เลย**
+// dist/ มีแต่ไฟล์ build จริงเท่านั้น ไม่มีทางมี tests/, node_modules/, package.json หลุดไปด้วย
+{
+  "name": "ชื่อ-worker-ตรงกับใน-cloudflare-dashboard",
+  "account_id": "account-id-จาก-cloudflare-dashboard", // ไม่ใช่ความลับ เห็นได้ใน URL ของ dashboard
+  "compatibility_date": "2026-09-02", // ใส่วันที่ปัจจุบันตอน setup
+  "assets": {
+    "directory": "./dist"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": { "enabled": false, "persist": true, "head_sampling_rate": 1 }
+  }
+}

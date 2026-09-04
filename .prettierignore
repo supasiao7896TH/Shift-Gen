@@ -1,0 +1,11 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+package-lock.json
+
+# index.html จัดวางด้วยมือ (คอมเมนต์ไทยที่จัดคอลัมน์ · token block ที่อ่านเป็นบล็อก)
+# ต้องตรงกับ design-lab/starter/index.html เป๊ะ (ตรวจโดย tools/check-standards.mjs)
+# prettier จะรื้อทั้งหมดโดยไม่ได้คุณภาพเพิ่ม — เนื้อหามีเทสต์เฝ้าอยู่แล้ว
+index.html
+*.md

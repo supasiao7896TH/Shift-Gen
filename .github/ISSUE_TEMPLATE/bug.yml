@@ -1,0 +1,34 @@
+name: แจ้งปัญหา
+description: แอปทำงานไม่เหมือนที่ควรจะเป็น
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: เกิดอะไรขึ้น
+      placeholder: เช่น กดบันทึกแล้วข้อมูลหาย
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: กดอะไรก่อนหน้านั้น
+      placeholder: |
+        1. เปิดหน้า...
+        2. กดปุ่ม...
+        3. เห็น...
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: เครื่องที่ใช้
+      placeholder: มือถือ Android / PC ที่ทำงาน / iPad
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: เวอร์ชันแอป
+      description: ปุ่ม "รายงานปัญหา" ในแอปจะกรอกช่องนี้ให้อัตโนมัติ
+      placeholder: เช่น a1b2c3d 2026-09-02

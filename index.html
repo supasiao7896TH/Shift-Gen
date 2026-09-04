@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'">
+<title>ShiftGen — Supasit.A</title>
+
+<!-- rel=manifest ไม่ต้องเขียนเอง — vite-plugin-pwa แทรกให้ตอน build เสมอ -->
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F7F9FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1219" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap">
+
+<style>
+/* ============================================================
+   SUPASIT.A STUDIO — design token (ตรงกับ design-lab/starter/ เป๊ะ)
+   ============================================================ */
+:root {
+  --bg:#F7F9FC; --surface:#FFFFFF; --surface-2:#EDF1F9; --surface-3:#DFE6F3;
+  --border:#D6DEEE; --border-strong:#B2BFD8;
+  --text:#131829; --text-2:#414A60; --text-3:#5F6980;
+  --accent:#1D4ED8; --accent-hover:#173DA8; --on-accent:#FFFFFF;
+  --accent-soft:#DFE6FA; --accent-soft-text:#15389C;
+  --accent-2:#8A6410; --accent-2-soft:#FBEFCF; --accent-2-text:#6B4E08;
+  --ok:#1A7444; --ok-soft:#D6F0E1; --warn:#8A5A08; --warn-soft:#FBEBCF;
+  --crit:#B3261E; --crit-soft:#FBDEDB; --on-crit:#FFFFFF;
+  --r-sm:6px; --r-md:9px; --r-lg:13px; --r-xl:16px; --r-pill:999px; --r-btn:999px;
+  --shadow-1:0 1px 2px rgba(15,25,50,.06);
+  --shadow-2:0 4px 16px rgba(15,25,50,.11);
+  --topbar-bg:color-mix(in srgb, #F7F9FC 85%, transparent);
+  --ease:cubic-bezier(.4,0,.2,1); --dur:.16s;
+  --font-ui:"Noto Sans Thai", system-ui, -apple-system, sans-serif;
+  --focus-ring:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#0E1219; --surface:#161C27; --surface-2:#1D2431; --surface-3:#262F40;
+    --border:#242C3A; --border-strong:#38455A;
+    --text:#E6EAF3; --text-2:#B0B9CB; --text-3:#868FA3;
+    --accent:#7FA8FF; --accent-hover:#A6C3FF; --on-accent:#141B29;
+    --accent-soft:#1C2538; --accent-soft-text:#DFE9FF;
+    --accent-2:#E0B85C; --accent-2-soft:#332708; --accent-2-text:#F0D69A;
+    --ok:#5FD08D; --ok-soft:#0F2E1D; --warn:#E0AE52; --warn-soft:#32250A;
+    --crit:#F0938A; --crit-soft:#3A1512; --on-crit:#3A0F0A;
+    --shadow-1:0 1px 2px rgba(0,0,0,.5); --shadow-2:0 4px 18px rgba(0,0,0,.55);
+    --topbar-bg:color-mix(in srgb, #0E1219 85%, transparent);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#0E1219; --surface:#161C27; --surface-2:#1D2431; --surface-3:#262F40;
+  --border:#242C3A; --border-strong:#38455A;
+  --text:#E6EAF3; --text-2:#B0B9CB; --text-3:#868FA3;
+  --accent:#7FA8FF; --accent-hover:#A6C3FF; --on-accent:#141B29;
+  --accent-soft:#1C2538; --accent-soft-text:#DFE9FF;
+  --accent-2:#E0B85C; --accent-2-soft:#332708; --accent-2-text:#F0D69A;
+  --ok:#5FD08D; --ok-soft:#0F2E1D; --warn:#E0AE52; --warn-soft:#32250A;
+  --crit:#F0938A; --crit-soft:#3A1512; --on-crit:#3A0F0A;
+  --shadow-1:0 1px 2px rgba(0,0,0,.5); --shadow-2:0 4px 18px rgba(0,0,0,.55);
+  --topbar-bg:color-mix(in srgb, #0E1219 85%, transparent);
+}
+
+*,*::before,*::after { box-sizing: border-box; }
+body { margin:0; background: var(--bg); color: var(--text);
+  font-family: var(--font-ui); font-size:15px; line-height:1.6;
+  -webkit-text-size-adjust:100%; }
+h1,h2,h3,p,ul { margin:0; } ul { list-style:none; padding:0; }
+
+.topbar { position:sticky; top:0; z-index:20; background:var(--topbar-bg); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border); padding:12px 20px; display:flex; align-items:center; gap:12px; }
+.logo { width:30px; height:30px; border-radius:var(--r-sm); background:var(--accent); color:var(--on-accent);
+  display:grid; place-items:center; font-weight:700; font-size:13px; }
+.app-name { font-weight:600; letter-spacing:-.018em; }
+.topbar .spacer { margin-left:auto; }
+
+/* --- App shell: sidebar (PC/Desktop) + content --- */
+.app-shell { display:grid; grid-template-columns:220px 1fr; min-height:calc(100vh - 55px); }
+.sidebar { border-right:1px solid var(--border); padding:20px 12px; display:flex; flex-direction:column; gap:4px; }
+.nav-item { font:inherit; font-size:14px; font-weight:500; text-align:left; padding:11px 14px;
+  min-height:44px; border-radius:var(--r-md); border:none; background:transparent; color:var(--text-2);
+  cursor:pointer; transition:background var(--dur) var(--ease), color var(--dur) var(--ease); }
+.nav-item:hover { background:var(--surface-2); color:var(--text); }
+.nav-item[aria-current="page"] { background:var(--accent-soft); color:var(--accent-soft-text); font-weight:600; }
+.nav-item:focus-visible { outline:none; box-shadow:var(--focus-ring); }
+
+main.content { max-width:1180px; padding:24px 28px calc(100px + env(safe-area-inset-bottom) + 24px); display:grid; gap:24px; align-content:start; }
+@media (max-width:900px) {
+  .app-shell { grid-template-columns:1fr; }
+  .sidebar { border-right:none; border-bottom:1px solid var(--border); flex-direction:row; overflow-x:auto; }
+}
+
+.eyebrow { font-size:11.7px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--accent-2); }
+h1 { font-size:clamp(24px,3.4vw,32px); font-weight:600; letter-spacing:-.018em; line-height:1.18; text-wrap:balance; }
+h2 { font-size:20px; font-weight:600; letter-spacing:-.014em; line-height:1.2; }
+.lede { color:var(--text-2); max-width:62ch; }
+
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg);
+  box-shadow:var(--shadow-1); padding:18px;
+  transition:box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+.grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); }
+@media (min-width:760px) { .grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media (max-width:720px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+.grid > *, .card { min-width:0; }
+
+.kpi .k-label { font-size:12.3px; color:var(--text-2); }
+.kpi .k-val { font-size:30px; font-weight:700; letter-spacing:-.02em; line-height:1.1;
+  display:flex; align-items:baseline; flex-wrap:wrap; font-variant-numeric:tabular-nums; }
+.kpi .k-unit { font-size:12px; color:var(--text-3); font-weight:400; margin-left:4px; white-space:nowrap; }
+
+.chip { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:var(--r-pill);
+  font-size:11.7px; font-weight:600; white-space:nowrap; }
+.c-ok{background:var(--ok-soft);color:var(--ok)} .c-warn{background:var(--warn-soft);color:var(--warn)}
+.c-crit{background:var(--crit-soft);color:var(--crit)} .c-ref{background:var(--accent-2-soft);color:var(--accent-2-text)}
+.c-neutral{background:var(--surface-3);color:var(--text-2)}
+
+.btn { font:inherit; font-size:14px; font-weight:600; padding:10px 20px; min-height:44px;
+  border-radius:var(--r-btn); border:1px solid transparent; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  transition:background var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.btn:active { transform:scale(.97); }
+.btn:focus-visible { outline:none; box-shadow:var(--focus-ring); }
+.btn-primary{background:var(--accent);color:var(--on-accent)} .btn-primary:hover{background:var(--accent-hover)}
+.btn-soft{background:var(--accent-soft);color:var(--accent-soft-text)}
+.btn-outline{background:transparent;color:var(--text);border-color:var(--border-strong)}
+.btn-outline:hover{background:var(--surface-2)}
+.btn-ghost{background:transparent;color:var(--text-2)} .btn-ghost:hover{background:var(--surface-2);color:var(--text)}
+.btn-danger{background:var(--crit-soft);color:var(--crit)}
+
+.field-row { display:flex; flex-wrap:wrap; align-items:end; gap:14px; }
+.field { display:grid; gap:6px; }
+.field label { font-size:12.8px; font-weight:500; color:var(--text-2); }
+.field :is(input,select,textarea) { font:inherit; font-size:14.3px; color:var(--text); width:100%;
+  background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-md);
+  padding:12px 14px; min-height:46px;
+  transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
+.field :is(input,select,textarea):focus { outline:none; border-color:var(--accent); box-shadow:var(--focus-ring); }
+.field.err :is(input,textarea) { border-color:var(--crit); }
+.field .hint { font-size:12px; color:var(--text-3); }
+.field.err .hint { color:var(--crit); }
+
+.tbl-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface); min-width:0; }
+.tbl-wrap:focus-visible { outline:none; box-shadow:var(--focus-ring); }
+table { border-collapse:collapse; width:100%; min-width:520px; }
+thead th { text-align:left; font-size:12px; font-weight:600; color:var(--text-2); background:var(--surface-2);
+  padding:12px 16px; border-bottom:1px solid var(--border); white-space:nowrap; }
+tbody td { padding:13px 16px; font-size:13.8px; border-bottom:1px solid var(--border); }
+tbody tr:last-child td { border-bottom:0; }
+tbody tr:hover td { background:var(--surface-2); }
+td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+
+/* ตาราง preview รายเดือน (M/N/OM/ON) — ตัวเลขวันที่ชิดขวา ตัวหนาแถวแรก */
+.month-grid-title { font-weight:600; margin-bottom:8px; }
+.month-grid table td, .month-grid table th { text-align:center; padding:8px 10px; font-variant-numeric:tabular-nums; }
+.month-grid table th:first-child, .month-grid table td:first-child { text-align:left; font-weight:600; position:sticky; left:0; background:var(--surface-2); }
+
+.section-block { display:grid; gap:14px; }
+/* .section-block ตั้ง display:grid ไว้ (author stylesheet) ซึ่งชนะ UA default [hidden]{display:none}
+   เสมอไม่ว่า specificity เท่าไหร่ — ต้องประกาศเองว่า [hidden] ชนะ ไม่งั้น section ที่ควรซ่อนจะโผล่ */
+[hidden] { display:none !important; }
+
+/* Brand dock — แถบล่างถาวรเต็มความกว้าง */
+.err-toast { position:fixed; left:50%; transform:translateX(-50%); bottom:76px; z-index:40;
+  display:flex; align-items:center; gap:12px; max-width:min(560px, calc(100vw - 32px));
+  padding:12px 16px; border-radius:var(--r-lg); border:1px solid var(--crit);
+  background:var(--crit-soft); color:var(--text); box-shadow:var(--shadow-2); }
+.err-toast[hidden] { display:none; }
+.brand-dock { position:fixed; left:0; right:0; bottom:0; z-index:30;
+  height:calc(100px + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom);
+  display:flex; align-items:center; justify-content:center;
+  background:var(--surface); border-top:1px solid var(--border); box-shadow:var(--shadow-1);
+  text-decoration:none; }
+.brand-dock:focus-visible { outline:none; box-shadow:var(--focus-ring); }
+.brand-dock img { width:280px; height:auto; display:block; }
+.brand-dock .mark-dark { display:none; }
+@media (prefers-color-scheme:dark) {
+  :root:not([data-theme="light"]) .brand-dock .mark-light { display:none; }
+  :root:not([data-theme="light"]) .brand-dock .mark-dark { display:block; }
+}
+:root[data-theme="dark"] .brand-dock .mark-light { display:none; }
+:root[data-theme="dark"] .brand-dock .mark-dark { display:block; }
+
+@media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">S</div>
+  <div class="app-name">ShiftGen</div>
+  <div class="spacer"></div>
+  <button class="btn btn-ghost" id="themeBtn" aria-label="สลับธีมสว่าง/มืด">ธีม</button>
+</header>
+
+<div class="app-shell">
+  <nav class="sidebar" aria-label="เมนูหลัก">
+    <button class="nav-item" id="navDashboard" type="button" aria-current="page">Dashboard</button>
+    <button class="nav-item" id="navSettings" type="button">ตั้งค่า Pattern</button>
+  </nav>
+
+  <main class="content">
+    <section id="view-dashboard" class="section-block">
+      <div>
+        <div class="eyebrow">ShiftGen</div>
+        <h1>ตารางกะอัตโนมัติ</h1>
+        <p class="lede">คำนวณตารางหมุนเวียนกะทั้งปีจากสูตรเดียว เลือกปีแล้วกด "สร้างตาราง" — ไม่ต้องพิมพ์มืออีกต่อไป</p>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="yearInput">ปี (ค.ศ.)</label>
+          <input type="number" id="yearInput" min="1970" max="2200" step="1">
+        </div>
+        <div class="field">
+          <label for="monthInput">เดือนที่ดู preview</label>
+          <select id="monthInput">
+            <option value="1">มกราคม</option>
+            <option value="2">กุมภาพันธ์</option>
+            <option value="3">มีนาคม</option>
+            <option value="4">เมษายน</option>
+            <option value="5">พฤษภาคม</option>
+            <option value="6">มิถุนายน</option>
+            <option value="7">กรกฎาคม</option>
+            <option value="8">สิงหาคม</option>
+            <option value="9">กันยายน</option>
+            <option value="10">ตุลาคม</option>
+            <option value="11">พฤศจิกายน</option>
+            <option value="12">ธันวาคม</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="generateBtn" type="button">สร้าง/แสดงตาราง</button>
+      </div>
+
+      <div class="grid" id="kpiRow"></div>
+
+      <div id="masterPreview" class="section-block"></div>
+
+      <div>
+        <div class="eyebrow">ปฏิทินรายทีม</div>
+        <h2>ดูตารางของแต่ละทีม</h2>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="teamPatternSelect">Pattern</label>
+          <select id="teamPatternSelect"></select>
+        </div>
+        <div class="field">
+          <label for="teamSelect">ทีม</label>
+          <select id="teamSelect"></select>
+        </div>
+      </div>
+      <div id="teamPreview" class="tbl-wrap" tabindex="0" role="region" aria-label="ตารางปฏิทินรายทีม เลื่อนแนวนอนได้"></div>
+
+      <div class="field-row">
+        <button class="btn btn-soft" id="exportMasterBtn" type="button">Export Master ทั้งปี (.xlsx)</button>
+        <button class="btn btn-soft" id="exportTeamsBtn" type="button">Export ปฏิทินรายทีมทั้งปี (.xlsx)</button>
+      </div>
+    </section>
+
+    <section id="view-settings" class="section-block" hidden>
+      <div>
+        <div class="eyebrow">ShiftGen</div>
+        <h2>ตั้งค่า Rotation Pattern</h2>
+        <p class="lede">ค่าเริ่มต้น verify แล้วตรงกับไฟล์ต้นฉบับปี 2569 ครบ 365 วันทั้ง 2 pattern — แก้ไขเฉพาะกรณีที่สูตรกะเปลี่ยนจริงเท่านั้น</p>
+      </div>
+      <div id="patternSettingsList" class="section-block"></div>
+    </section>
+  </main>
+</div>
+
+<!-- Global Error Boundary -->
+<div class="err-toast" id="errorToast" role="alert" aria-live="assertive" hidden>
+  <span id="errorToastText"></span>
+  <button class="btn btn-ghost" id="reportBtn" type="button">รายงานปัญหา</button>
+</div>
+
+<a class="brand-dock" href="#" aria-label="สร้างโดย A(i)CODER">
+  <img class="mark-light" src="/assets/d1-neon-arcade-bare.svg" alt="" width="1200" height="300">
+  <img class="mark-dark" src="/assets/d2-crt-night-bare.svg" alt="" width="1200" height="300">
+</a>
+
+<!-- SheetJS — export .xlsx ฝั่ง client ล้วน (pin เวอร์ชันเสมอ, CSP อนุญาต cdnjs.cloudflare.com ไว้แล้ว) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

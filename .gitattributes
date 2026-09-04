@@ -1,0 +1,8 @@
+# บังคับ LF ทุกเครื่อง — ทำงานเดียวกับ .gitattributes ของ claude-config
+# จำเป็นต้องมีสำเนาที่นี่ด้วย เพราะโฟลเดอร์นี้ถูก copy ไปเป็น repo แอปใหม่
+# .gitattributes ของ claude-config จะไม่ตามไปด้วย
+* text=auto eol=lf
+
+*.png binary
+*.ico binary
+*.woff2 binary

@@ -1,0 +1,70 @@
+name: CI
+
+# ไฟล์นี้ "เฉื่อย" ตอนอยู่ใน claude-config เพราะ GitHub อ่าน .github/workflows
+# เฉพาะที่ root ของ repo — จะมีชีวิตเมื่อโฟลเดอร์นี้ถูก copy ไปเป็น repo ของแอปเอง
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: lint + secret scan + unit + build + e2e
+        run: npm run check
+
+  # ไม่มี job cache-guard เหมือน design-lab/starter — vite-plugin-pwa generate service worker
+  # จาก build manifest จริงทุกครั้งที่ build จึงไม่มีเลข CACHE_NAME ให้คนลืม bump อีกต่อไป
+
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # ฝัง build stamp เพื่อตอบคำถาม "แก้แล้วขึ้นจริงหรือยัง" ด้วยเครื่อง ไม่ใช่ด้วยความรู้สึก
+      # ต้องแก้ index.html ต้นทาง "ก่อน" build เสมอ — ไม่ใช่แก้ dist/index.html ทีหลัง
+      # เพราะ vite-plugin-pwa คำนวณ precache revision hash จากเนื้อไฟล์ตอน build
+      # ถ้าแก้ทีหลัง service worker จะ cache เนื้อหาคนละ hash กับที่มันคำนวณไว้
+      - name: ฝังเวอร์ชันลงหน้า แล้ว build
+        run: |
+          STAMP="${GITHUB_SHA::7} $(date -u +%Y-%m-%d)"
+          sed -i "s|<head>|<head>\n<meta name=\"app-version\" content=\"$STAMP\">|" index.html
+          echo "STAMP=$STAMP" >> "$GITHUB_ENV"
+          npm run build
+
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: versions upload
+
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: versions deploy -y
+
+      # ยืนยันว่าสิ่งที่อยู่บน URL จริงคือ commit นี้ ไม่ใช่ของเก่าที่ cache ไว้
+      - name: ตรวจว่า URL จริงเสิร์ฟ commit นี้แล้ว
+        run: |
+          test -n "${{ vars.APP_URL }}" || { echo "ยังไม่ได้ตั้ง repo variable APP_URL — ข้ามการตรวจ"; exit 0; }
+          for i in 1 2 3 4 5; do
+            curl -sf "${{ vars.APP_URL }}" | grep -q "${GITHUB_SHA::7}" && exit 0
+            sleep 10
+          done
+          echo "::error::URL จริงยังไม่เสิร์ฟ ${GITHUB_SHA::7} หลังรอ 50 วินาที"
+          exit 1

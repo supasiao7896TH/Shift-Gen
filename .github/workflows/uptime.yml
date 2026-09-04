@@ -1,0 +1,69 @@
+name: Uptime
+
+# ตรวจว่าแอปยังเปิดได้ไหม ทุกชั่วโมง — ล้มเหลวก็เปิด/อัปเดต issue เดียว
+# ต้องตั้ง repo variable APP_URL ก่อน ไม่งั้น job จะข้ามไปเฉยๆ
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ข้ามถ้ายังไม่ได้ตั้ง APP_URL
+        id: guard
+        run: |
+          if [ -z "${{ vars.APP_URL }}" ]; then
+            echo "ยังไม่ได้ตั้ง repo variable APP_URL — ข้าม"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: เรียก URL จริง
+        if: steps.guard.outputs.skip != 'true'
+        id: ping
+        continue-on-error: true
+        run: curl -sfo /dev/null --max-time 20 "${{ vars.APP_URL }}"
+
+      - name: เปิด/อัปเดต issue เมื่อเข้าไม่ได้
+        if: steps.guard.outputs.skip != 'true' && steps.ping.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "แอปเข้าไม่ได้";
+            const body = `ตรวจไม่ผ่านเมื่อ ${new Date().toISOString()}\n${{ toJSON(vars.APP_URL) }}`;
+            const { data } = await github.rest.issues.listForRepo({
+              ...context.repo, state: "open", labels: "deploy"
+            });
+            const open = data.find((i) => i.title === title);
+            if (open) {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: open.number, body
+              });
+            } else {
+              await github.rest.issues.create({
+                ...context.repo, title, body, labels: ["deploy"]
+              });
+            }
+
+      - name: ปิด issue เมื่อกลับมาปกติ
+        if: steps.guard.outputs.skip != 'true' && steps.ping.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.issues.listForRepo({
+              ...context.repo, state: "open", labels: "deploy"
+            });
+            const open = data.find((i) => i.title === "แอปเข้าไม่ได้");
+            if (open) {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: open.number,
+                body: `กลับมาปกติแล้วเมื่อ ${new Date().toISOString()}`
+              });
+              await github.rest.issues.update({
+                ...context.repo, issue_number: open.number, state: "closed"
+              });
+            }

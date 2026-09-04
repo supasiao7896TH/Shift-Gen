@@ -11,7 +11,7 @@ export const AppConfig = Object.freeze({
   STORES: ["patterns", "export_history"],
   THEME_KEY: "shiftgen:theme",
   /* ใส่ .../issues/new ของ repo แอปนี้ — ว่างไว้ = ปุ่มรายงานปัญหาจะเงียบ */
-  ISSUE_URL: "",
+  ISSUE_URL: "https://github.com/supasiao7896TH/Shift-esey/issues/new",
 
   PATTERNS: [
     {

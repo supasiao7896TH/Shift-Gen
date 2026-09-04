@@ -28,7 +28,7 @@
   canary/gradual rollout อยู่แล้วเลยไม่คุ้มจะแก้ปัญหานั้น)
 - **Test/CI:** Vitest (unit) + Playwright (e2e/a11y) · GitHub Actions (`.github/workflows/ci.yml`)
   รัน check ทุก push/PR แล้ว deploy อัตโนมัติเมื่อ push เข้า main และ check ผ่าน
-- **Repo:** https://github.com/supasiao7896TH/Shift-esey
+- **Repo:** https://github.com/supasiao7896TH/Shift-Gen
 - **Branch:** main
 
 ### JS Modules (ใช้เท่าที่จำเป็น — ตัด CLOUD_SYNC_MANAGER/AUTH_PROVIDER/GEMINI_AI_BRIDGE ออกทั้งหมด)

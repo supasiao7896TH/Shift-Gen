@@ -29,6 +29,11 @@
   --accent-2:#8A6410; --accent-2-soft:#FBEFCF; --accent-2-text:#6B4E08;
   --ok:#1A7444; --ok-soft:#D6F0E1; --warn:#8A5A08; --warn-soft:#FBEBCF;
   --crit:#B3261E; --crit-soft:#FBDEDB; --on-crit:#FFFFFF;
+  /* role-row accent (M/N/OM/ON แยกแถวในตารางกะ) — ผ่าน dataviz CVD/contrast validator
+     แบบ adjacent-pairlist ทั้ง light/dark (order: M=magenta N=violet OM=aqua ON=orange
+     ห้ามสลับลำดับ เพราะ pair ที่ FAIL เฉพาะบาง order เท่านั้น) ใช้เป็น border-left + พื้นหลัง
+     อ่อนเท่านั้น ตัวหนังสือ role ยังคงสี --text ปกติเสมอ (ไม่ทาสีทับตัวอักษร) */
+  --role-m:#e87ba4; --role-n:#4a3aa7; --role-om:#1baf7a; --role-on:#eb6834;
   --r-sm:6px; --r-md:9px; --r-lg:13px; --r-xl:16px; --r-pill:999px; --r-btn:999px;
   --shadow-1:0 1px 2px rgba(15,25,50,.06);
   --shadow-2:0 4px 16px rgba(15,25,50,.11);
@@ -47,6 +52,7 @@
     --accent-2:#E0B85C; --accent-2-soft:#332708; --accent-2-text:#F0D69A;
     --ok:#5FD08D; --ok-soft:#0F2E1D; --warn:#E0AE52; --warn-soft:#32250A;
     --crit:#F0938A; --crit-soft:#3A1512; --on-crit:#3A0F0A;
+    --role-m:#d55181; --role-n:#9085e9; --role-om:#199e70; --role-on:#d95926;
     --shadow-1:0 1px 2px rgba(0,0,0,.5); --shadow-2:0 4px 18px rgba(0,0,0,.55);
     --topbar-bg:color-mix(in srgb, #0E1219 85%, transparent);
   }
@@ -60,6 +66,7 @@
   --accent-2:#E0B85C; --accent-2-soft:#332708; --accent-2-text:#F0D69A;
   --ok:#5FD08D; --ok-soft:#0F2E1D; --warn:#E0AE52; --warn-soft:#32250A;
   --crit:#F0938A; --crit-soft:#3A1512; --on-crit:#3A0F0A;
+  --role-m:#d55181; --role-n:#9085e9; --role-om:#199e70; --role-on:#d95926;
   --shadow-1:0 1px 2px rgba(0,0,0,.5); --shadow-2:0 4px 18px rgba(0,0,0,.55);
   --topbar-bg:color-mix(in srgb, #0E1219 85%, transparent);
 }
@@ -162,6 +169,14 @@ td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
    ตรงความหมาย "ข้อมูลอ้างอิง" ของระบบสีเดิม ไม่ชนกับ ok/warn/crit ที่สงวนไว้บอกสถานะ */
 .month-grid table td.col-weekend, .month-grid table th.col-weekend { background:var(--surface-3); }
 .month-grid table td.col-holiday, .month-grid table th.col-holiday { background:var(--accent-2-soft); color:var(--accent-2-text); }
+/* ไฮไลต์แถว role (M/N/OM/ON) ด้วยแถบสีซ้าย — คนละกลไกกับไฮไลต์คอลัมน์วันด้านบน (แยก cell
+   กันคนละใบ ไม่ชนกัน) ใช้ nth-child ตามตำแหน่งแถวใน tbody เพราะ pattern.roles เรียงลำดับ
+   คงที่เสมอ (M,N,OM,ON หรือ M,N,O) ไม่ต้องแก้ ui-renderer.js/pdf-export.js เลย — ตัวหนังสือ
+   role ยังคงสี --text ปกติ ไม่ทาสีทับตัวอักษร (ตาม dataviz skill: "text wears text tokens") */
+.month-grid table tbody tr:nth-child(1) td:first-child { border-left:4px solid var(--role-m); background:color-mix(in srgb, var(--role-m) 16%, var(--surface-2)); }
+.month-grid table tbody tr:nth-child(2) td:first-child { border-left:4px solid var(--role-n); background:color-mix(in srgb, var(--role-n) 16%, var(--surface-2)); }
+.month-grid table tbody tr:nth-child(3) td:first-child { border-left:4px solid var(--role-om); background:color-mix(in srgb, var(--role-om) 16%, var(--surface-2)); }
+.month-grid table tbody tr:nth-child(4) td:first-child { border-left:4px solid var(--role-on); background:color-mix(in srgb, var(--role-on) 16%, var(--surface-2)); }
 .legend-swatch { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:2px; vertical-align:-1px; }
 .legend-swatch.col-weekend { background:var(--surface-3); border:1px solid var(--border-strong); }
 .legend-swatch.col-holiday { background:var(--accent-2-soft); border:1px solid var(--accent-2); }
@@ -191,9 +206,20 @@ td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
 .pdf-page-compact table th:first-child, .pdf-page-compact table td:first-child { text-align:left; font-weight:600; background:#EDF1F9; width:32px; }
 .pdf-page-compact table td.col-weekend, .pdf-page-compact table th.col-weekend { background:#DFE6F3; }
 .pdf-page-compact table td.col-holiday, .pdf-page-compact table th.col-holiday { background:#FBEFCF; color:#6B4E08; }
+/* แถบสีซ้ายแยกแถว role (M/N/OM/ON) — สีเดียวกับ --role-* บนหน้าจอ (light) แต่ hardcode
+   เพราะไฟล์นี้ต้อง fix สีเสมอไม่ว่าธีมหน้าเว็บตอน export จะเป็นอะไร (ดูคอมเมนต์บนสุดของไฟล์
+   .pdf-page) พื้นหลังคือ tint 16% ของสี role ผสม #EDF1F9 (ค่าเดียวกับ --surface-2 light) */
+.pdf-page-compact table tbody tr:nth-child(1) td:first-child { border-left:3px solid #e87ba4; background:#F5E3EA; }
+.pdf-page-compact table tbody tr:nth-child(2) td:first-child { border-left:3px solid #4a3aa7; background:#E2E0EE; }
+.pdf-page-compact table tbody tr:nth-child(3) td:first-child { border-left:3px solid #1baf7a; background:#DCEEE5; }
+.pdf-page-compact table tbody tr:nth-child(4) td:first-child { border-left:3px solid #eb6834; background:#F5E5DD; }
 .pdf-page .pdf-legend { margin-top:8px; font-size:10px; line-height:1.3; color:#414A60; }
 .pdf-page .pdf-legend .legend-swatch { margin:0 4px 0 12px; }
-.pdf-page .pdf-legend .legend-swatch:first-child { margin-left:0; }
+/* buildLegend() (pdf-export.js) ห่อ swatch+label แต่ละอันด้วย <span> ของตัวเอง — swatch จึง
+   เป็น :first-child ของ wrapper ตัวเองเสมอทุกรายการ ไม่ใช่แค่รายการแรกของ legend จริงๆ (bug
+   เดิม: ทำให้ margin-left:0 ไปโดนทุก swatch รวมถึง "วันหยุดนักขัตฤกษ์" ตัวที่ 2 ด้วย เลยชิด
+   ข้อความก่อนหน้าจนดูซ้อนกัน) ต้องเช็ก :first-child ที่ wrapper <span> ระดับบนแทน */
+.pdf-page .pdf-legend > span:first-child .legend-swatch { margin-left:0; }
 .pdf-page .pdf-legend .legend-swatch.col-weekend { background:#DFE6F3; border:1px solid #B2BFD8; }
 .pdf-page .pdf-legend .legend-swatch.col-holiday { background:#FBEFCF; border:1px solid #8A6410; }
 

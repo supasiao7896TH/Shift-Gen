@@ -91,23 +91,31 @@ function installErrorBoundary() {
   });
 }
 
-function installNav() {
-  const dashBtn = document.getElementById("navDashboard");
-  const settingsBtn = document.getElementById("navSettings");
-  const dashView = document.getElementById("view-dashboard");
-  const settingsView = document.getElementById("view-settings");
+/* views: id ต้องตรงกับ view-<id> (section) เสมอ — เพิ่มเมนูใหม่แค่เติม entry ในนี้
+   ไม่ต้องเขียน toggle logic ซ้ำทีละคู่แบบเดิม */
+const NAV_VIEWS = [
+  { id: "dashboard", btn: "navDashboard" },
+  { id: "settings", btn: "navSettings" },
+  { id: "help", btn: "navHelp" }
+];
 
-  function show(view) {
-    const isDash = view === "dashboard";
-    dashView.hidden = !isDash;
-    settingsView.hidden = isDash;
-    dashBtn.setAttribute("aria-current", isDash ? "page" : "false");
-    settingsBtn.setAttribute("aria-current", isDash ? "false" : "page");
-    if (!isDash) renderSettings();
+function installNav() {
+  const entries = NAV_VIEWS.map((v) => ({
+    ...v,
+    btnEl: document.getElementById(v.btn),
+    viewEl: document.getElementById(`view-${v.id}`)
+  }));
+
+  function show(id) {
+    entries.forEach((e) => {
+      const active = e.id === id;
+      e.viewEl.hidden = !active;
+      e.btnEl.setAttribute("aria-current", active ? "page" : "false");
+    });
+    if (id === "settings") renderSettings();
   }
 
-  dashBtn.addEventListener("click", () => show("dashboard"));
-  settingsBtn.addEventListener("click", () => show("settings"));
+  entries.forEach((e) => e.btnEl.addEventListener("click", () => show(e.id)));
 }
 
 /* --- Pattern overrides (IndexedDB) --- */
